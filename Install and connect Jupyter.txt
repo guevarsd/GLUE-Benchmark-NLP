@@ -1,0 +1,20 @@
+#In root
+mkdir notebooks
+pip install jupyter 
+
+#Add jupyter location to your PATH
+echo "PATH=$PATH://home/ubuntu/.local/bin" >> .bashrc
+source ~/.bashrc
+
+#Launch notebook
+cd notebooks
+jupyter notebook --ip=* --allow_origin=*
+
+
+
+#With notebook running, in a different mobaxterm tab
+#Start ssh tunneling
+ssh -NL 8888:localhost:8888 ubuntu@18.212.61.36 -i C:\\Users\\Mariko\\Downloads\\mmcdougall2NLP.ppk
+
+
+
