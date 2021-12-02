@@ -200,7 +200,7 @@ trainer = Trainer(
 trainer.evaluate()
 
 
-# In[15]:
+# In[8]:
 
 
 ### Collect Predictions  ###
@@ -218,16 +218,147 @@ gc.collect()
 torch.cuda.empty_cache()
 
 
-# In[16]:
+# In[10]:
 
 
 prediction_electra
 
 
-# In[ ]:
+# In[11]:
 
 
 print('done')
+
+
+# In[ ]:
+
+
+
+
+
+# # Random Forest
+
+# ## Combine Model Predicions to create Input Features
+
+# In[35]:
+
+
+import pandas as pd
+
+#Labels
+val_labels = prediction_deberta.label_ids
+
+
+#DeBERTa
+df_deberta = pd.DataFrame(prediction_deberta[0])
+df_deberta=df_deberta.rename(columns=dict(zip(df_deberta.columns,['deberta_'+str(col) for col in df_deberta.columns])))
+print(df_deberta.head(),'\n')
+
+
+#Electra
+df_electra = pd.DataFrame(prediction_electra[0])
+df_electra=df_electra.rename(columns=dict(zip(df_electra.columns,['electra_'+str(col) for col in df_electra.columns])))
+print(df_electra.head(),'\n')
+
+
+# In[32]:
+
+
+#Combine the dataframes
+df_combine = pd.concat([df_deberta, df_electra], axis=1)
+df_combine.head()
+
+
+# In[51]:
+
+
+# Importing the required packages
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import matthews_corrcoef
+from sklearn.metrics import classification_report
+from sklearn.metrics import roc_auc_score
+
+
+# In[39]:
+
+
+# Split the dataset into train and test
+
+X_train, X_test, y_train, y_test = train_test_split(df_combine, val_labels, test_size=0.3, random_state=100)
+X_train.head()
+
+
+# In[40]:
+
+
+# Perform training with random forest with all columns
+# Initialize random forest classifier
+clf = RandomForestClassifier(n_estimators=100)
+
+# Perform training
+clf.fit(X_train, y_train)
+
+# Predicton on test using all features
+y_pred = clf.predict(X_test)
+y_pred_score = clf.predict_proba(X_test)
+
+
+# In[49]:
+
+
+metric_name
+
+
+# In[61]:
+
+
+# Print basic Report, then specify for the model
+
+print("\n")
+print("Results Using All Features: \n")
+
+print("Classification Report: ")
+print(classification_report(y_test,y_pred))
+print("\n")
+
+if metric_name == 'accuracy':
+    print("Accuracy : ", accuracy_score(y_test, y_pred) * 100)
+    
+elif metric_name == 'matthews_correlation':
+    print("Accuracy : ", matthews_corrcoef(y_test, y_pred) * 100)
+
+elif metric_name == "pearson":
+    print("Accuracy : ", matthews_corrcoef(y_test, y_pred) * 100)
+
+else:
+    print('ERROR')
+
+print('-------------------')
+print("DeBERTa : ", prediction_deberta.metrics['test_'+metric_name]*100)
+print("Electra : ", prediction_electra.metrics['test_'+metric_name]*100)
+
+
+# In[58]:
+
+
+#metric_str = 'test_'+metric_name
+prediction_deberta.metrics['test_'+metric_name]
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
