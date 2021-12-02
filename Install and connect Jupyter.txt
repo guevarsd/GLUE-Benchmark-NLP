@@ -14,7 +14,4 @@ jupyter notebook --ip=* --allow_origin=*
 
 #With notebook running, in a different mobaxterm tab
 #Start ssh tunneling
-ssh -NL 8888:localhost:8888 ubuntu@18.212.61.36 -i C:\\Users\\Mariko\\Downloads\\mmcdougall2NLP.ppk
-
-
-
+ssh -NL 8888:localhost:8888 ubuntu@18.205.105.238 -i C:\\Users\\Mariko\\Downloads\\mmcdougall2NLP.ppk
