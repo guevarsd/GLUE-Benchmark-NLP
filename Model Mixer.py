@@ -115,21 +115,21 @@ trainer = Trainer(
 trainer.evaluate()
 
 
-# In[5]:
+# In[4]:
 
 
 ### Collect Predictions  ###
 
-prediction_deberta = trainer.predict(encoded_dataset['test'])
+prediction_deberta = trainer.predict(encoded_dataset[validation_key])
 
 
-# In[6]:
+# In[5]:
 
 
 prediction_deberta
 
 
-# In[7]:
+# In[6]:
 
 
 ## Clear the Cache
@@ -139,7 +139,7 @@ torch.cuda.empty_cache()
 
 # ## Load Electra
 
-# In[10]:
+# In[7]:
 
 
 ###  Tokenizing Section  ####
@@ -158,7 +158,8 @@ def tokenizer_func(examples):
 # tokenize sentence(s)
 encoded_dataset = dataset.map(tokenizer_func, batched=True)
 
-model_checkpoint = "electra-small-discriminator-finetuned-cola/"
+#model_checkpoint = "electra-small-discriminator-finetuned-cola/"
+model_checkpoint = "google/electra-small-discriminator"
 
 ###  Model Section  ####
 
@@ -199,17 +200,17 @@ trainer = Trainer(
 trainer.evaluate()
 
 
-# In[11]:
+# In[15]:
 
 
 ### Collect Predictions  ###
 ## Clear the Cache
 gc.collect()
 torch.cuda.empty_cache()
-prediction_electra = trainer.predict(encoded_dataset['test'])
+prediction_electra = trainer.predict(encoded_dataset[validation_key])
 
 
-# In[ ]:
+# In[9]:
 
 
 ## Clear the Cache
@@ -217,10 +218,10 @@ gc.collect()
 torch.cuda.empty_cache()
 
 
-# In[ ]:
+# In[16]:
 
 
-trainer.prediction_loop()
+prediction_electra
 
 
 # In[ ]:
@@ -233,6 +234,20 @@ print('done')
 
 
 get_ipython().system('nvidia-smi')
+
+
+# In[14]:
+
+
+### How to make the test dataset not crash
+
+test2 = encoded_dataset['test'].remove_columns(['label'])
+new_column = [0] * len(test2)
+test3 = test2.add_column("label", new_column)
+
+#Should run fine
+prediction_electra = trainer.predict(test3)
+prediction_electra[0]
 
 
 # In[ ]:
