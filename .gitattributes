@@ -2,3 +2,4 @@ DeBERTa/ filter=lfs diff=lfs merge=lfs -text
 Electra/ filter=lfs diff=lfs merge=lfs -text
 DeBERTa/* filter=lfs diff=lfs merge=lfs -text
 DeBERTa/*/*.* filter=lfs diff=lfs merge=lfs -text
+XLNet/*/*.* filter=lfs diff=lfs merge=lfs -text
