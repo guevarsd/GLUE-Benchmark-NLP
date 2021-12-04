@@ -3,3 +3,5 @@ glue_data/
 .idea/
 Models/
 XLNet/
+DeBERTa/
+Electra/
