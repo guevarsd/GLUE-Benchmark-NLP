@@ -25,7 +25,7 @@ GLUE_TASKS = ["cola", "mnli", "mnli-mm", "mrpc", "qnli", "qqp", "rte", "sst2",  
 #GLUE_TASKS = ["qqp"]
 
 
-# In[ ]:
+# In[2]:
 
 
 
@@ -410,12 +410,12 @@ for task in GLUE_TASKS:
         ensemble_f = 999
         print('ERROR')
     
-    if ensemble_f != 999:
+    try:
         deberta_f = prediction_deberta.metrics['test_f1'], 
         electra_f = prediction_electra.metrics['test_f1'], 
         xlnet_f = prediction_xlnet.metrics['test_f1']
-    else:
-        deberta_f = electra_f = xlnet_f = 999
+    except:
+        ensemble_f = deberta_f = electra_f = xlnet_f = 999
     
     print("Accuracy : ", ensemble_score * 100, '\nFscore : ', ensemble_f)
         
@@ -434,18 +434,41 @@ for task in GLUE_TASKS:
     
 
 
-# In[ ]:
+# In[3]:
 
 
 print('Done')
 
 
-# In[ ]:
+# In[8]:
 
 
 ensemble_metrics = pd.DataFrame(metric_collector, columns = ['Task','Ensemble', 'DeBERTa', 'Electra', 'XLNet', 
                                                              'Ensemble_f','DeBERTa_f', 'Electra_f', 'XLNet_f', ])
-ensemble_metrics.head()
+ensemble_metrics.head(15)
+
+
+# In[31]:
+
+
+#Remove tuples from the f-scores in some columns
+
+for column in ['DeBERTa_f', 'Electra_f']:
+    col = ensemble_metrics[column]
+
+    for val in range(col.shape[0]):
+        #Correct tuples
+        if type(col[val]) == tuple:
+            ensemble_metrics[column][val] = col[val][0]
+            
+ensemble_metrics.head(15)
+
+
+# In[32]:
+
+
+ensemble_metrics.to_csv('Ensemble_save.csv')
+ensemble_metrics.to_excel('Ensemble_save.xlsx')
 
 
 # In[ ]:
