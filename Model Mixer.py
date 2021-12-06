@@ -39,7 +39,7 @@ task_to_keys = {
 }
 
 #Select task
-task = "cola"  #cola, mrpc
+task = "rte"  #cola, mrpc
 batch_size = 10 #10 normally, 8 for qnli
 
 # Load dataset based on task variable
@@ -75,7 +75,8 @@ def tokenizer_func(examples):
 # tokenize sentence(s)
 encoded_dataset = dataset.map(tokenizer_func, batched=True)
 
-model_checkpoint = "deberta-v3-small_baseline_cola/"
+#model_checkpoint = "deberta-v3-small_baseline_cola/"
+model_checkpoint = "deberta-v3-small_baseline_"+actual_task+"/"
 
 ###  Model Section  ####
 
@@ -159,7 +160,8 @@ def tokenizer_func(examples):
 encoded_dataset = dataset.map(tokenizer_func, batched=True)
 
 #model_checkpoint = "electra-small-discriminator-finetuned-cola/"
-model_checkpoint = "google/electra-small-discriminator"
+#model_checkpoint = "Electra_fintuned_cola/"
+model_checkpoint = "Electra_fintuned_"+actual_task+"/"
 
 ###  Model Section  ####
 
@@ -230,6 +232,94 @@ prediction_electra
 print('done')
 
 
+# ## Load XLNet
+
+# In[12]:
+
+
+###  Tokenizing Section  ####
+
+#Load model
+model_checkpoint = "xlnet-base-cased"
+
+# Create tokenizer for respective model
+tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, use_fast=True, truncation=True, model_max_length=512)
+
+def tokenizer_func(examples):
+    if sentence2_key is None:
+        return tokenizer(examples[sentence1_key], truncation=True,)
+    return tokenizer(examples[sentence1_key], examples[sentence2_key], truncation=True,)
+
+# tokenize sentence(s)
+encoded_dataset = dataset.map(tokenizer_func, batched=True)
+
+#model_checkpoint = "electra-small-discriminator-finetuned-cola/"
+#model_checkpoint = "Electra_fintuned_cola/"
+model_checkpoint = "xlnet-base-cased_baseline_"+actual_task+"/"
+
+###  Model Section  ####
+
+# Create model and attach ForSequenceClassification head
+model_xlnet = AutoModelForSequenceClassification.from_pretrained(model_checkpoint, num_labels=num_labels)
+
+# Type of metric for given task
+metric_name = "pearson" if task == "stsb" else "matthews_correlation" if task == "cola" else "accuracy"
+
+
+args = TrainingArguments(
+    f"{model_checkpoint}-finetuned-Testing-{task}",
+    evaluation_strategy = "epoch",
+    per_device_eval_batch_size=batch_size,
+    weight_decay=0.01,
+    metric_for_best_model=metric_name,
+    eval_accumulation_steps=5
+)
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    if task != "stsb":
+        predictions = np.argmax(predictions, axis=1)
+    else:
+        predictions = predictions[:, 0]
+    return metric.compute(predictions=predictions, references=labels)
+
+validation_key = "validation_mismatched" if task == "mnli-mm" else "validation_matched" if task == "mnli" else "validation"
+trainer = Trainer(
+    model_xlnet,
+    args,
+    train_dataset=encoded_dataset["train"],
+    eval_dataset=encoded_dataset[validation_key],
+    tokenizer=tokenizer,
+    compute_metrics=compute_metrics
+)
+
+trainer.evaluate()
+
+
+# In[13]:
+
+
+### Collect Predictions  ###
+## Clear the Cache
+gc.collect()
+torch.cuda.empty_cache()
+prediction_xlnet = trainer.predict(encoded_dataset[validation_key])
+
+
+# In[14]:
+
+
+## Clear the Cache
+gc.collect()
+torch.cuda.empty_cache()
+
+
+# In[15]:
+
+
+prediction_xlnet
+
+
 # In[ ]:
 
 
@@ -240,7 +330,7 @@ print('done')
 
 # ## Combine Model Predicions to create Input Features
 
-# In[35]:
+# In[16]:
 
 
 import pandas as pd
@@ -261,15 +351,21 @@ df_electra=df_electra.rename(columns=dict(zip(df_electra.columns,['electra_'+str
 print(df_electra.head(),'\n')
 
 
-# In[32]:
+#XLNet
+df_xlnet = pd.DataFrame(prediction_xlnet[0])
+df_xlnet=df_xlnet.rename(columns=dict(zip(df_xlnet.columns,['xlnet_'+str(col) for col in df_xlnet.columns])))
+print(df_xlnet.head(),'\n')
+
+
+# In[17]:
 
 
 #Combine the dataframes
-df_combine = pd.concat([df_deberta, df_electra], axis=1)
+df_combine = pd.concat([df_deberta, df_electra, df_xlnet], axis=1)
 df_combine.head()
 
 
-# In[51]:
+# In[18]:
 
 
 # Importing the required packages
@@ -283,7 +379,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import roc_auc_score
 
 
-# In[39]:
+# In[19]:
 
 
 # Split the dataset into train and test
@@ -292,7 +388,7 @@ X_train, X_test, y_train, y_test = train_test_split(df_combine, val_labels, test
 X_train.head()
 
 
-# In[40]:
+# In[20]:
 
 
 # Perform training with random forest with all columns
@@ -307,13 +403,13 @@ y_pred = clf.predict(X_test)
 y_pred_score = clf.predict_proba(X_test)
 
 
-# In[49]:
+# In[21]:
 
 
 metric_name
 
 
-# In[61]:
+# In[22]:
 
 
 # Print basic Report, then specify for the model
@@ -340,13 +436,7 @@ else:
 print('-------------------')
 print("DeBERTa : ", prediction_deberta.metrics['test_'+metric_name]*100)
 print("Electra : ", prediction_electra.metrics['test_'+metric_name]*100)
-
-
-# In[58]:
-
-
-#metric_str = 'test_'+metric_name
-prediction_deberta.metrics['test_'+metric_name]
+print("XLNet : ", prediction_xlnet.metrics['test_'+metric_name]*100)
 
 
 # In[ ]:
@@ -362,23 +452,29 @@ prediction_deberta.metrics['test_'+metric_name]
 
 
 # In[ ]:
+
+
+
+
+
+# In[23]:
 
 
 get_ipython().system('nvidia-smi')
 
 
-# In[14]:
+# In[24]:
 
 
 ### How to make the test dataset not crash
 
-test2 = encoded_dataset['test'].remove_columns(['label'])
-new_column = [0] * len(test2)
-test3 = test2.add_column("label", new_column)
+#test2 = encoded_dataset['test'].remove_columns(['label'])
+#new_column = [0] * len(test2)
+#test3 = test2.add_column("label", new_column)
 
 #Should run fine
-prediction_electra = trainer.predict(test3)
-prediction_electra[0]
+#prediction_electra = trainer.predict(test3)
+#prediction_electra[0]
 
 
 # In[ ]:
