@@ -7,7 +7,7 @@ import transformers
 # List of glue tasks
 GLUE_TASKS = ["cola", "mnli", "mnli-mm", "mrpc", "qnli", "qqp", "rte", "sst2", "stsb", "wnli"]
 
-task = "qqp"  #oom mnli, mrpc
+task = "qqp"   # To replace with the appropriate task
 model_checkpoint = "xlnet-base-cased"
 batch_size = 10
 
