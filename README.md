@@ -11,11 +11,8 @@ The 9 tasks in the GLUE dataset represent a diverse set of challenges, from gram
 
 To create a high-performing model capable of understanding and generating natural language, we integrate three state-of-the-art models -- Electra, XLNet, and DeBERTa -- together with an ensemble learning model to capture information from the three disparate models on each task. With this method, we capitalize on the unique strengths of each individual model, while mitigating most weaknesses. 
 
-##
 
-
-To load and process each of the GLUE tasks we employ the ‘datasets’ package provided by Hugging Face, thus the GLUE tasks are conveniently accessible using the load_dataset() function. The loaded datasets are pre-separated into training, testing and validation datasets.
-
+**In this repository**:
 The Scripts folder holds the codes used to implement the ensemble methods and the Results folder contains the predictions using the ensembles.
 Code for running the tasks for each model is under the respective teammate's Individual Project folder:
 - Arathi: Electra
@@ -23,3 +20,8 @@ Code for running the tasks for each model is under the respective teammate's Ind
 - Mariko: DeBERTa
 
 The DeBERTa and Electra folders on the main branch contain the config and json files of the best model for each task for each Transformer. XLNet's config and json files can be found [here](https://drive.google.com/drive/folders/1r8wa6eLtjMt4jgv96zea-9oFWR8BMtcF?usp=sharing).
+
+##
+
+### The Datasets 
+To load and process each of the GLUE tasks we employ the ‘datasets’ package provided by Hugging Face, thus the GLUE tasks are conveniently accessible using the load_dataset() function. The loaded datasets are pre-separated into training, testing and validation datasets.
