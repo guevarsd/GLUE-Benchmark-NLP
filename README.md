@@ -13,7 +13,7 @@ To create a high-performing model capable of understanding and generating natura
 
 
 **In this repository**:
-The Scripts folder holds the codes used to implement the ensemble methods and the Results folder contains the predictions of the ensembles.
+The Code folder holds the codes used to implement the ensemble methods and the Results folder contains the predictions of the ensembles.
 Code for running the tasks for each model is under the respective teammate's Individual Project folder:
 - Arathi: Electra
 - Stefani: XLNet
