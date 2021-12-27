@@ -14,10 +14,6 @@ To create a high-performing model capable of understanding and generating natura
 
 **In this repository**:
 The Code folder holds the codes used to implement the ensemble methods and the Results folder contains the predictions of the ensembles.
-Code for running the tasks for each model is under the respective teammate's Individual Project folder:
-- Arathi: Electra
-- Stefani: XLNet
-- Mariko: DeBERTa
 
 The DeBERTa and Electra folders on the main branch contain the config and json files of the best model for each task for each Transformer. XLNet's config and json files can be found [here](https://drive.google.com/drive/folders/1r8wa6eLtjMt4jgv96zea-9oFWR8BMtcF?usp=sharing).
 
